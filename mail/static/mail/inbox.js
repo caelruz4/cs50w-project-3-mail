@@ -29,7 +29,7 @@ function view_email(id) {
   fetch(`/emails/${id}`)
     .then(response => response.json())
     .then(email => {
-      // Show email
+      // Generating email information card
       document.querySelector('#emails-view').style.display = 'none';
       document.querySelector('#compose-view').style.display = 'none';
       document.querySelector('#emails-view').style.display = 'block';
@@ -58,14 +58,19 @@ function view_email(id) {
           read: true
         })
       })
-      // Add reply button functionality
+
+      // Reply button
       document.querySelector('#reply').addEventListener('click', () => {
         compose_email();
         document.querySelector('#compose-recipients').value = email.sender;
-        document.querySelector('#compose-subject').value = `Re: ${email.subject}`;
-        document.querySelector('#compose-body').value = `On ${email.timestamp} ${email.sender} wrote: \n ${email.body}`;
+
+        if(email.subject.indexOf("Re: ") === -1) {
+          email.subject = "Re: "+email.subject;
+        }
+        document.querySelector('#compose-subject').value = email.subject;
+        document.querySelector('#compose-body').value = `\n On ${email.timestamp} ${email.sender} wrote: \n ${email.body}`;
       })
-      // Add archive button functionality
+      // Archive button
       document.querySelector('#archive').addEventListener('click', () => {
         fetch(`/emails/${email.id}`, {
           method: 'PUT',
@@ -76,7 +81,7 @@ function view_email(id) {
         load_mailbox('archive');
       })
 
-      // unarchive
+      // Unarchive
       document.querySelector('#unarchive').addEventListener('click', () => {
         fetch(`/emails/${email.id}`, {
           method: 'PUT',
@@ -104,16 +109,21 @@ function load_mailbox(mailbox) {
     .then(response => response.json())
     .then(emails => {
       emails.forEach(email => {
-        // create a div for each
+
+        // creating an element for each email
         console.log(email);
         const mail = document.createElement('div');
-        // innerHTml
         mail.innerHTML = 
-        `<div class="row">
-            <div class="col-md-3 font-weight-bold">From: ${email.sender}</div>
-            <div class="col-md-6">${email.subject}</div>
-            <div class="col-md-3 text-right">${email.timestamp}</div>
-        </div>`;
+        `<ul class="list-group mb-1">
+        <li class="list-group-item">
+            <div class="row">
+                <div class="col-md-3 from-text">From: ${email.sender}</div>
+                <div class="col-md-6">${email.subject}</div>
+                <div class="col-md-3 text-right">${email.timestamp}</div>
+            </div>
+        </li>
+    </ul>
+    `;
 
         // Show if it is read or not
         if (email.read) {
